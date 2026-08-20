@@ -1,2 +1,62 @@
+version: '3.8'
+
 services:
-  
+  # ================= 1. MySQL 数据库服务（带自动初始化） =================
+  mysql:
+    image: mysql:5.7
+    container_name: user-center-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: dsdbys
+      MYSQL_DATABASE: my_db     # 容器启动时会自动创建 my_db 这个数据库
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # ⚠️ 关键点：将你后端的 sql 文件夹挂载到容器的初始化目录。
+      # 容器第一次启动时，会自动按字母顺序执行这个文件夹里的所有 .sql 文件（建表、插数据）
+      - ./user-center-backend/sql:/docker-entrypoint-initdb.d
+    restart: always
+    networks:
+      - user-center-net
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ================= 2. 后端 Java 服务 =================
+  backend:
+    build:
+      context: ./user-center-backend
+      dockerfile: Dockerfile
+    container_name: user-center-backend
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/my_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: dsdbys
+    ports:
+      - "8081:8081"
+    restart: always
+    networks:
+      - user-center-net
+
+  # ================= 3. 前端 Nginx 服务 =================
+  frontend:
+    build:
+      context: ./user-center-frontend
+      dockerfile: Dockerfile
+    container_name: user-center-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - user-center-net
+
+networks:
+  user-center-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

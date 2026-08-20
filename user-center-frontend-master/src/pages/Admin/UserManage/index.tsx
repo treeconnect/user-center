@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable, { TableDropdown } from '@ant-design/pro-table';
-import { searchUsers } from "@/services/ant-design-pro/api";
-import {Image} from "antd";
+import { searchUsers } from '@/services/ant-design-pro/api';
+import { Image } from 'antd';
 
 const columns: ProColumns<API.CurrentUser>[] = [
   {
@@ -106,8 +106,8 @@ export default () => {
         console.log(sort, filter);
         const userList = await searchUsers();
         return {
-          data: userList
-        }
+          data: userList,
+        };
       }}
       editable={{
         type: 'multiple',
