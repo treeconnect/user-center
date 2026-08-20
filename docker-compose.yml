@@ -14,7 +14,7 @@ services:
       - mysql_data:/var/lib/mysql
       # ⚠️ 关键点：将你后端的 sql 文件夹挂载到容器的初始化目录。
       # 容器第一次启动时，会自动按字母顺序执行这个文件夹里的所有 .sql 文件（建表、插数据）
-      - ./user-center-backend/sql:/docker-entrypoint-initdb.d
+      - ./user-center-backed-master/sql:/docker-entrypoint-initdb.d
     restart: always
     networks:
       - user-center-net
@@ -25,9 +25,9 @@ services:
   # ================= 2. 后端 Java 服务 =================
   backend:
     build:
-      context: ./user-center-backend
+      context: ./user-center-backed-master
       dockerfile: Dockerfile
-    container_name: user-center-backend
+    container_name: user-center-backed-master
     depends_on:
       - mysql
     environment:
@@ -35,7 +35,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: dsdbys
     ports:
-      - "8081:8081"
+      - "8080:8080"
     restart: always
     networks:
       - user-center-net
@@ -43,9 +43,9 @@ services:
   # ================= 3. 前端 Nginx 服务 =================
   frontend:
     build:
-      context: ./user-center-frontend
+      context: ./user-center-frontend-master
       dockerfile: Dockerfile
-    container_name: user-center-frontend
+    container_name: user-center-frontend-master
     depends_on:
       - backend
     ports:
